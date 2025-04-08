@@ -222,17 +222,18 @@ int main(void)
     uint32_t capsense_state_timeout;
     uint32_t interruptStatus;
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+
+    #if ENABLE_RUN_TIME_MEASUREMENT
     static uint32_t active_processing_time;
     static uint32_t alr_processing_time;
-#endif
+    #endif
 
     /* Initialize the device and board peripherals */
     result = cybsp_init() ;
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+    #if ENABLE_RUN_TIME_MEASUREMENT
     init_sys_tick();
-#endif
+    #endif
 
     /* Board init failed. Stop program execution */
     if (result != CY_RSLT_SUCCESS)
@@ -246,7 +247,7 @@ int main(void)
     /* Initialize EZI2C */
     initialize_capsense_tuner();
 
-#if ENABLE_PWM_LED
+    #if ENABLE_PWM_LED
     /* Initialize PWM block */
     (void)Cy_TCPWM_PWM_Init(CYBSP_PWM_HW, CYBSP_PWM_NUM, &CYBSP_PWM_config);
     /* Enable the initialized PWM */
@@ -256,7 +257,7 @@ int main(void)
 
     Cy_TCPWM_PWM_SetPeriod0(CYBSP_PWM_HW, CYBSP_PWM_NUM,390);
     Cy_TCPWM_PWM_SetCompare0(CYBSP_PWM_HW, CYBSP_PWM_NUM,195);
-#endif
+    #endif
 
     /* Register callbacks */
     register_callback();
@@ -286,11 +287,11 @@ int main(void)
 
                 while (Cy_CapSense_IsBusy(&cy_capsense_context))
                 {
-#if ENABLE_PWM_LED
+                    #if ENABLE_PWM_LED
                     Cy_SysPm_CpuEnterSleep();
-#else
+                    #else
                     Cy_SysPm_CpuEnterDeepSleep();
-#endif
+                    #endif
 
                     Cy_SysLib_ExitCriticalSection(interruptStatus);
 
@@ -300,10 +301,10 @@ int main(void)
 
                 Cy_SysLib_ExitCriticalSection(interruptStatus);
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+                #if ENABLE_RUN_TIME_MEASUREMENT
                 active_processing_time=0;
                 start_runtime_measurement();
-#endif
+                #endif
 
                 Cy_CapSense_ProcessAllWidgets(&cy_capsense_context);
 
@@ -326,9 +327,9 @@ int main(void)
                     }
                 }
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+                #if ENABLE_RUN_TIME_MEASUREMENT
                 active_processing_time=stop_runtime_measurement();
-#endif
+                #endif
 
                 break;
                 /* End of ACTIVE_MODE */
@@ -342,11 +343,11 @@ int main(void)
 
                 while (Cy_CapSense_IsBusy(&cy_capsense_context))
                 {
-#if ENABLE_PWM_LED
+                    #if ENABLE_PWM_LED
                     Cy_SysPm_CpuEnterSleep();
-#else
+                    #else
                     Cy_SysPm_CpuEnterDeepSleep();
-#endif
+                    #endif
 
                     Cy_SysLib_ExitCriticalSection(interruptStatus);
 
@@ -356,10 +357,10 @@ int main(void)
 
                 Cy_SysLib_ExitCriticalSection(interruptStatus);
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+                #if ENABLE_RUN_TIME_MEASUREMENT
                 alr_processing_time=0;
                 start_runtime_measurement();
-#endif
+                #endif
 
                 Cy_CapSense_ProcessAllWidgets(&cy_capsense_context);
 
@@ -383,9 +384,9 @@ int main(void)
                     }
                 }
 
-#if ENABLE_RUN_TIME_MEASUREMENT
+                #if ENABLE_RUN_TIME_MEASUREMENT
                 alr_processing_time=stop_runtime_measurement();
-#endif
+                #endif
 
                 break;
                 /* End of Active-Low Refresh Rate(ALR) mode */
@@ -399,11 +400,11 @@ int main(void)
 
                 while (Cy_CapSense_IsBusy(&cy_capsense_context))
                 {
-#if ENABLE_PWM_LED
+                    #if ENABLE_PWM_LED
                     Cy_SysPm_CpuEnterSleep();
-#else
+                    #else
                     Cy_SysPm_CpuEnterDeepSleep();
-#endif
+                    #endif
 
                     Cy_SysLib_ExitCriticalSection(interruptStatus);
 
@@ -438,14 +439,14 @@ int main(void)
                 CY_ASSERT(CY_ASSERT_FAILED);
                 break;
         }
-#if ENABLE_PWM_LED
+        #if ENABLE_PWM_LED
         led_control();
-#endif
+        #endif
 
-#if ENABLE_TUNER
+        #if ENABLE_TUNER
         /* Establishes synchronized communication with the CAPSENSE&trade; Tuner tool */
         Cy_CapSense_RunTuner(&cy_capsense_context);
-#endif
+        #endif
     }
 }
 
@@ -535,9 +536,11 @@ static void initialize_capsense_tuner(void)
      * the Tuner or the Bridge Control Panel can read this buffer but you can
      * connect only one tool at a time.
      */
+    #if ENABLE_TUNER
     Cy_SCB_EZI2C_SetBuffer1(CYBSP_EZI2C_HW, (uint8_t *)&cy_capsense_tuner,
             sizeof(cy_capsense_tuner), sizeof(cy_capsense_tuner),
             &ezi2c_context);
+    #endif
 
     Cy_SCB_EZI2C_Enable(CYBSP_EZI2C_HW);
 
